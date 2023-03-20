@@ -16,7 +16,7 @@ class ProteinDataset(Dataset):
         sample = {"Text": text, "Class": label}
         return sample
 
-
+# https://github.com/sacdallago/bio_embeddings/blob/develop/notebooks/embed_fasta_sequences.ipynb
 
 #load dataset
 train_data = SeqIO.parse("./data/train.fasta", "fasta")
