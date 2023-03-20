@@ -1,4 +1,5 @@
 from Bio import SeqIO
+from torch.utils.data import Dataset, DataLoader
 
 # define dataset class
 class ProteinDataset(Dataset):
@@ -20,11 +21,14 @@ class ProteinDataset(Dataset):
 #load dataset
 train_data = SeqIO.parse("./data/train.fasta", "fasta")
 val_data = SeqIO.parse("./data/val.fasta", "fasta")
-print(type(train_data))
+# print(type(train_data))
 train_data = list(train_data)
 print(type(train_data[0]))
+print(vars(train_data[0]))
+# for i in range(len(train_data)):
+    
 
-dataloader = 
+# dataloader = 
 
 #load model
 
