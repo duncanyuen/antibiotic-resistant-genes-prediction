@@ -1,6 +1,7 @@
 from Bio import SeqIO
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
+from bio_embeddings.embed import ProtTransBertBFDEmbedder
 
 # define dataset class
 class ProteinDataset(Dataset):
