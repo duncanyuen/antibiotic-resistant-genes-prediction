@@ -6,6 +6,7 @@ import pandas as pd
 # from transformers import T5Tokenizer, T5EncoderModel
 # from transformers import BertTokenizer, BertEncoderModel
 from transformers import AutoTokenizer, Trainer, TrainingArguments, AutoModelForSequenceClassification, BertTokenizerFast, EvalPrediction
+from transformers import BertForSequenceClassification, AdamW, BertConfig
 import torch
 import re
 import numpy as np
@@ -15,8 +16,8 @@ import os, sys
 
 model_name = 'Rostlab/prot_bert_bfd'
 
-# device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-device = torch.device('cpu')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cpu')
 
 # tokenizer = T5Tokenizer.from_pretrained('Rostlab/prot_t5_xl_half_uniref50-enc', do_lower_case=False)
 # print(vars(tokenizer))
@@ -217,3 +218,15 @@ torch.save(val_dataset, "./valdata.pt")
 #
 # trainer.save_model('models/')
 #fine-tune
+
+model = BertForSequenceClassification.from_pretrained(
+    model_name,
+    num_labels = len(arg_dict), # The number of output labels--2 for binary classification.
+                    # You can increase this for multi-class tasks.   
+    output_attentions = False, # Whether the model returns attentions weights.
+    output_hidden_states = False, # Whether the model returns all hidden-states.
+)
+
+# Tell pytorch to run this model on the GPU.
+# model.cuda()
+model = model.to(device)
