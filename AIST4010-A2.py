@@ -1,6 +1,7 @@
 from Bio import SeqIO
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
+# from bio_embeddings.embed import ProtTransBertBFDEmbedder
 from bio_embeddings.embed import ProtTransBertBFDEmbedder
 
 # define dataset class
@@ -18,18 +19,54 @@ class ProteinDataset(Dataset):
         sample = {"Sequence": sequence, "Class": label}
         return sample
 
-def seq_to_df(seq_records):
-    df = pd.DataFrame(columns=['sequence', 'label'])
+def seq_to_df(seq_records, arg_dict):
+    sequence = []
+    label = []
     for i in range(len(seq_records)):
+        sequence.append(str(seq_records[i]._seq))
+        #translate
+        info = seq_records[i].id.split('|')
+        if (info[0] == "sp"):
+            label.append(14)
+        else:
+            label.append(arg_dict[info[3]])
+    #now sequence and label are filled
+    # embeddings = embedder.embed_many(sequence)
+    # embeddings = [ProtTransBertBFDEmbedder.reduce_per_protein(e) for e in list(embeddings)]
+    data = {'sequence': sequence,
+            'label': label}
+    df = pd.DataFrame(data)
+    return df
+
+
+
 # https://github.com/sacdallago/bio_embeddings/blob/develop/notebooks/embed_fasta_sequences.ipynb
 
 #load dataset
+arg_dict = {'aminoglycoside': 0,
+            'macrolide-lincosamide-streptogramin': 1,
+            'polymyxin': 2,
+            'fosfomycin': 3,
+            'trimethoprim': 4,
+            'bacitracin': 5,
+            'quinolone': 6,
+            'multidrug': 7,
+            'chloramphenicol': 8,
+            'tetracycline': 9,
+            'rifampin': 10,
+            'beta lactam': 11,
+            'sulfonamide': 12,
+            'glycopeptide': 13,
+            'nonarg': 14
+            }
 train_data = SeqIO.parse("./data/train.fasta", "fasta")
 val_data = SeqIO.parse("./data/val.fasta", "fasta")
 # print(type(train_data))
 train_data = list(train_data)
 print(type(train_data[0]))
 print(vars(train_data[0]))
+
+embedder = ProtTransBertBFDEmbedder()
 
 train_df = pd.DataFrame()
 val_df = pd.DataFrame()
