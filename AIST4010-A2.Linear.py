@@ -1,6 +1,7 @@
 from Bio import SeqIO
 from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
 import torch.optim as optim
+import torch.nn as nn
 import pandas as pd
 from transformers import AutoTokenizer, Trainer, TrainingArguments, AutoModelForSequenceClassification, BertTokenizerFast, EvalPrediction
 from transformers import BertForSequenceClassification, BertConfig
@@ -10,6 +11,7 @@ import numpy as np
 from sklearn.metrics import f1_score
 from tqdm.auto import tqdm
 import os, sys
+import random
 
 model_name = 'Rostlab/prot_bert_bfd'
 
@@ -166,15 +168,15 @@ validation_dataloader = DataLoader(
 model = nn.Sequential(
     nn.Linear(max_length, max_length//2),
     nn.Tanh(),
-    nn.dropout(0.3),
-    nn.Linear(max_length//2, num_classes)
+    nn.Dropout(0.3),
+    nn.Linear(max_length//2, num_class)
 )
 
 model = model.to(device)
 
 # print(model)
 
-optimizer = AdamW(model.parameters(),
+optimizer = optim.AdamW(model.parameters(),
                   lr = 5e-5,
                   eps = 1e-8
                 )
@@ -184,7 +186,7 @@ loss_fn = nn.CrossEntropyLoss()
 
 num_epochs = 32
 
-total_steps = len(train_dataloader) * epochs
+total_steps = len(train_dataloader) * num_epochs
 
 # This training code is based on the `run_glue.py` script here:
 # https://github.com/huggingface/transformers/blob/5bfcd0485ece086ebcbed2d008813037968a9e58/examples/run_glue.py#L128
@@ -204,7 +206,7 @@ training_stats = []
 # Measure the total training time for the whole run.
 
 # For each epoch...
-for i in range(epochs):
+for i in range(num_epochs):
     model.train()
     steps = 0
     total_train_loss = 0.0
@@ -218,7 +220,7 @@ for i in range(epochs):
         # backward pass. PyTorch doesn't do this automatically because 
         # accumulating the gradients is "convenient while training RNNs". 
         # (source: https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch)
-        optimiser.zero_grad()
+        optimizer.zero_grad()
 
         # Perform a forward pass (evaluate the model on this training batch).
         # In PyTorch, calling `model` will in turn call the model's `forward` 
@@ -365,9 +367,11 @@ print("Saving model to %s" % output_dir)
 
 # Save a trained model, configuration and tokenizer using `save_pretrained()`.
 # They can then be reloaded using `from_pretrained()`
-model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
-model_to_save.save_pretrained(output_dir)
-tokenizer.save_pretrained(output_dir)
+# model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+# model_to_save.save_pretrained(output_dir)
+# tokenizer.save_pretrained(output_dir)
+
+torch.save(model, "./model_save/linear_model.pt")
 
 # Good practice: save your training arguments together with the trained model
 # torch.save(args, os.path.join(output_dir, 'training_args.bin'))

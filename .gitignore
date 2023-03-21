@@ -1,3 +1,5 @@
 *.pt
 data/
 logs/
+model_save/
+model_save_old/

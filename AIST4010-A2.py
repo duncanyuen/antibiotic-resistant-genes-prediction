@@ -247,8 +247,34 @@ model = BertForSequenceClassification.from_pretrained(
     output_hidden_states = False, # Whether the model returns all hidden-states.
 )
 
-for param in model.bert.parameters():
-    param.requires_grad = False
+print(model)
+
+print(vars(model))
+print(vars(model.bert))
+
+# for i in range(len(model.bert.modules())):
+#     module = model.bert.modules()
+#     if len(model.bert.modules()) - i - 1> 2:
+#         module.requires_grad = False
+
+module_num = len(list(model.bert.modules()))
+no_gradded = 0
+
+for module in model.bert.modules():
+    # module.requires_grad = False
+    module.requires_grad_(False)
+    no_gradded += 1
+    if (module_num - no_gradded < 2):
+        break
+
+for module in model.bert.modules():
+    print(module)
+
+# for param in model.bert.parameters():
+    # print(param)
+    # param.requires_grad = False
+
+# sys.exit(0)
 
 # Tell pytorch to run this model on the GPU.
 # model.cuda()
