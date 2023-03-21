@@ -20,7 +20,7 @@ class ProteinDataset(Dataset):
 def seq_to_df(seq_records):
     df = pd.DataFrame(columns=['sequence', 'label'])
     for i in range(len(seq_records)):
-        
+# https://github.com/sacdallago/bio_embeddings/blob/develop/notebooks/embed_fasta_sequences.ipynb
 
 #load dataset
 train_data = SeqIO.parse("./data/train.fasta", "fasta")
