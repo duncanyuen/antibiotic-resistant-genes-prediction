@@ -2,7 +2,11 @@ from Bio import SeqIO
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 # from bio_embeddings.embed import ProtTransBertBFDEmbedder
-from bio_embeddings.embed import ProtTransBertBFDEmbedder
+# from bio_embeddings.embed import ProtTransBertBFDEmbedder
+from transformers import T5Tokenizer, T5EncoderModel
+import torch
+
+from tqdm import tqdm
 
 # define dataset class
 class ProteinDataset(Dataset):
@@ -22,7 +26,7 @@ class ProteinDataset(Dataset):
 def seq_to_df(seq_records, arg_dict):
     sequence = []
     label = []
-    for i in range(len(seq_records)):
+    for i in tqdm(range(len(seq_records))):
         sequence.append(str(seq_records[i]._seq))
         #translate
         info = seq_records[i].id.split('|')
@@ -54,7 +58,7 @@ arg_dict = {'aminoglycoside': 0,
             'chloramphenicol': 8,
             'tetracycline': 9,
             'rifampin': 10,
-            'beta lactam': 11,
+            'beta_lactam': 11,
             'sulfonamide': 12,
             'glycopeptide': 13,
             'nonarg': 14
@@ -63,13 +67,14 @@ train_data = SeqIO.parse("./data/train.fasta", "fasta")
 val_data = SeqIO.parse("./data/val.fasta", "fasta")
 # print(type(train_data))
 train_data = list(train_data)
+val_data = list(val_data)
 print(type(train_data[0]))
 print(vars(train_data[0]))
 
-embedder = ProtTransBertBFDEmbedder()
+# embedder = ProtTransBertBFDEmbedder()
 
-train_df = pd.DataFrame()
-val_df = pd.DataFrame()
+train_df = seq_to_df(train_data, arg_dict)
+val_df = seq_to_df(val_data, arg_dict)
 
 # for i in range(len(train_data)):
     
