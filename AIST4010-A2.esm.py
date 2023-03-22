@@ -160,7 +160,7 @@ arg_dict = {'aminoglycoside': 0,
 # for file in os.listdir(directory):
 #     filename = os.fsdecode(file)
 #     info = filename.split('|')
-#     embedding = torch.load(os.path.join(directory, filename))
+#   for file in tqdm(os.listdir(seq_dir)):  embedding = torch.load(os.path.join(directory, filename))
 #     print(info)
 #     print(embedding)
 #     print(embedding['representations'][33].shape)
@@ -218,10 +218,10 @@ model = model.to(device)
 # print(model)
 
 optimizer = optim.Adam(model.parameters(),
-                  lr = 2e-3,
+                  lr = 2e-5,
                 )
 
-lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+# lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 loss_fn = nn.CrossEntropyLoss()
 
 num_epochs = 32
@@ -297,7 +297,7 @@ for i in range(num_epochs):
         optimizer.step()
 
         # Update the learning rate.
-        lr_scheduler.step()
+  #       lr_scheduler.step()
 
     # Calculate the average loss over all of the batches.
     avg_train_loss = total_train_loss / len(train_dataloader)            
@@ -398,7 +398,7 @@ for i in range(num_epochs):
 print("")
 print("Training complete!")
 
-print("Total training took {:} (h:mm:ss)".format(format_time(time.time()-total_t0)))
+# print("Total training took {:} (h:mm:ss)".format(format_time(time.time()-total_t0)))
 
 import os
 
@@ -418,7 +418,13 @@ print("Saving model to %s" % output_dir)
 # model_to_save.save_pretrained(output_dir)
 # tokenizer.save_pretrained(output_dir)
 
-torch.save(model, "./model_save/linear_model.pt")
+state = {
+                'optimizer': optimizer.state_dict(),
+                'model': model.state_dict(),
+                'seed': seed_val,
+            }
+
+torch.save(state, "./model_save/linear_esm_model.pt")
 
 # Good practice: save your training arguments together with the trained model
 # torch.save(args, os.path.join(output_dir, 'training_args.bin'))
