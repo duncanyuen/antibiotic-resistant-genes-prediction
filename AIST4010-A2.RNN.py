@@ -183,12 +183,34 @@ validation_dataloader = DataLoader(
 
 #load model
 
-model = nn.Sequential(
-    nn.Linear(max_length, max_length//2),
-    nn.Tanh(),
-    nn.Dropout(0.3),
-    nn.Linear(max_length//2, num_class)
-)
+# model = nn.Sequential(
+#     nn.Linear(max_length, max_length//2),
+#     nn.Tanh(),
+#     nn.Dropout(0.3),
+#     nn.Linear(max_length//2, num_class)
+# )
+
+class RNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(RNN, self).__init__()
+
+        self.hidden_size = hidden_size
+
+        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
+        self.i2o = nn.Linear(input_size + hidden_size, output_size)
+        self.softmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, input, hidden):
+        combined = torch.cat((input, hidden), 1)
+        hidden = self.i2h(combined)
+        output = self.i2o(combined)
+        output = self.softmax(output)
+        return output, hidden
+
+    def initHidden(self):
+        return torch.zeros(32, self.hidden_size)
+
+model = RNN(input_size=max_length, hidden_size=128, output_size=num_class)
 
 model = model.to(device)
 
@@ -225,6 +247,8 @@ training_stats = []
 
 # For each epoch...
 for i in range(num_epochs):
+    hidden = model.initHidden()
+    hidden = hidden.to(device)
     model.train()
     steps = 0
     total_train_loss = 0.0
@@ -251,7 +275,9 @@ for i in range(num_epochs):
         # https://huggingface.co/transformers/main_classes/output.html#transformers.modeling_outputs.SequenceClassifierOutput
         # Specifically, we'll get the loss (because we provided labels) and the
         # "logits"--the model outputs prior to activation.
-        result = model(b_input_ids)
+        result = model(b_input_ids, hidden)
+
+        print(result, b_labels)
 
         loss = loss_fn(result, b_labels)
         # Accumulate the training loss over all of the batches so that we can
@@ -328,7 +354,7 @@ for i in range(num_epochs):
             # Forward pass, calculate logit predictions.
             # token_type_ids is the same as the "segment ids", which 
             # differentiates sentence 1 and 2 in 2-sentence tasks.
-            result = model(b_input_ids)
+            result = model(b_input_ids, hidden)
 
         # Get the loss and "logits" output by the model. The "logits" are the 
         # output values prior to applying an activation function like the 
@@ -396,7 +422,7 @@ print("Saving model to %s" % output_dir)
 # model_to_save.save_pretrained(output_dir)
 # tokenizer.save_pretrained(output_dir)
 
-torch.save(model, "./model_save/linear_model.pt")
+torch.save(model, "./model_save/rnn_model.pt")
 
 # Good practice: save your training arguments together with the trained model
 # torch.save(args, os.path.join(output_dir, 'training_args.bin'))

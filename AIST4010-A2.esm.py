@@ -32,10 +32,13 @@ class ProteinDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        seq = " ".join("".join(self.seqs[idx].split()))
-        seq = re.sub(r"[UZOB]", "X", seq)
-        seq_ids = self.tokenizer(seq, truncation=True, padding='max_length', max_length=self.max_length, add_special_tokens=True)
-        sample = {key: torch.tensor(val) for key, val in seq_ids.items()}
+        # seq = " ".join("".join(self.seqs[idx].split()))
+        # seq = re.sub(r"[UZOB]", "X", seq)
+        # seq_ids = self.tokenizer(seq, truncation=True, padding='max_length', max_length=self.max_length, add_special_tokens=True)
+        # sample = {key: torch.tensor(val) for key, val in seq_ids.items()}
+        sample = {}
+        # sample['input_ids'] = torch.tensor(self.seqs[idx])
+        sample['input_ids'] = self.seqs[idx]
         sample['labels'] = torch.tensor(self.labels[idx])
         return sample
 
@@ -54,23 +57,30 @@ def tokenize(seqs, batch_size):
             embeddings += embedding_rpr
     return embeddings
 
-def seq_to_df(seq_records, arg_dict, max_length):
+def seq_to_df(seq_dir, arg_dict, max_length):
     df = pd.DataFrame()
     sequence = []
     label = []
-    for i in tqdm(range(len(seq_records))):
-        sequence.append(str(seq_records[i]._seq))
-        #translate into ids
-        info = seq_records[i].id.split('|')
+    for file in tqdm(os.listdir(seq_dir)):
+        filename = os.fsdecode(file)
+        info = filename.split('|')
+        embedding = torch.load(os.path.join(seq_dir, filename))
+        embedding = list(embedding['mean_representations'].values())[0]
+        # print(embedding)
+        # length = embedding.shape[0]
+        # padding = nn.ZeroPad2d(((max_length-length), 0, 0, 0))
+        # embedding = padding(embedding)
+        sequence.append( embedding)
         if (info[0] == "sp"):
             label.append(14)
         else:
             label.append(arg_dict[info[3]])
     #now sequence and label are filled
-    df['input'] = ["".join(seq.split()) for seq in sequence]
-    df['input'] = [re.sub(r"[UZOB]", "X", seq) for seq in df['input']]
-    sequence = [ list(seq)[:max_length-2] for seq in df['input']]
-    df['label'] = [l for l in label]
+    print(len(sequence), len(label))
+    df['input'] = sequence
+    # df['input'] = [re.sub(r"[UZOB]", "X", seq) for seq in df['input']]
+    # sequence = [ list(seq)[:max_length-2] for seq in df['input']]
+    df['label'] = label
     return sequence, label, df
 
 def collate_batch(batch):
@@ -79,8 +89,8 @@ def collate_batch(batch):
     print(type(batch))
     for i in range(len(batch)):
         sample = batch[i]
-        embed = fe([sample["Sequence"]])
-        text_list.append(embed)
+        # embed = fe([sample["Sequence"]])
+        text_list.append(sample["Sequence"])
         classes.append(sample["Class"])
     text = torch.tensor(text_list)
     print(classes)
@@ -135,22 +145,35 @@ arg_dict = {'aminoglycoside': 0,
             'glycopeptide': 13,
             'nonarg': 14
             }
-train_data = SeqIO.parse("./data/train.fasta", "fasta")
-val_data = SeqIO.parse("./data/val.fasta", "fasta")
-train_data = list(train_data)
-val_data = list(val_data)
-print(type(train_data[0]))
-print(vars(train_data[0]))
+# train_data = SeqIO.parse("./data/train.fasta", "fasta")
+# val_data = SeqIO.parse("./data/val.fasta", "fasta")
+# train_data = list(train_data)
+# val_data = list(val_data)
+# print(type(train_data[0]))
+# print(vars(train_data[0]))
 
 ## embedder = ProtTransBertBFDEmbedder()
 
+# train_dir = "./embeddings/train/"
+# directory = os.fsencode(train_dir)
+# directory = train_dir
+# for file in os.listdir(directory):
+#     filename = os.fsdecode(file)
+#     info = filename.split('|')
+#     embedding = torch.load(os.path.join(directory, filename))
+#     print(info)
+#     print(embedding)
+#     print(embedding['representations'][33].shape)
+#     print(embedding['mean_representations'][33].shape)
+#     sys.exit(0)
+
 seq_tokenizer = BertTokenizerFast.from_pretrained(model_name, do_lower_case=False)
 
-max_length = 1576
+max_length = 1280
 num_class = len(arg_dict)
 
-train_seqs, train_labels, train_df = seq_to_df(train_data, arg_dict, max_length)
-val_seqs, val_labels, val_df = seq_to_df(val_data, arg_dict, max_length)
+train_seqs, train_labels, train_df = seq_to_df("./embeddings/train/", arg_dict, max_length)
+val_seqs, val_labels, val_df = seq_to_df("./embeddings/val/", arg_dict, max_length)
 
 # print(val_labels)
 
@@ -194,9 +217,8 @@ model = model.to(device)
 
 # print(model)
 
-optimizer = optim.AdamW(model.parameters(),
-                  lr = 2e-5,
-                  eps = 1e-8
+optimizer = optim.Adam(model.parameters(),
+                  lr = 2e-3,
                 )
 
 lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
@@ -233,7 +255,7 @@ for i in range(num_epochs):
         b_input_ids = batch["input_ids"].to(device)
         # print(b_input_ids)
         b_input_ids = b_input_ids.to(torch.float32)
-        b_input_mask = batch["attention_mask"].to(device)
+        # b_input_mask = batch["attention_mask"].to(device)
         b_labels = batch["labels"].to(device)
 
         # Always clear any previously calculated gradients before performing a
@@ -265,7 +287,7 @@ for i in range(num_epochs):
 
         # Clip the norm of the gradients to 1.0.
         # This is to help prevent the "exploding gradients" problem.
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 
         dataloader.set_description(f"training loss: {float(loss):0.3f}")
 
@@ -318,7 +340,7 @@ for i in range(num_epochs):
         b_input_ids = batch["input_ids"].to(device)
         # print(b_input_ids)
         b_input_ids = b_input_ids.to(torch.float32)
-        b_input_mask = batch["attention_mask"].to(device)
+        # b_input_mask = batch["attention_mask"].to(device)
         b_labels = batch["labels"].to(device)
         
         # Tell pytorch not to bother with constructing the compute graph during

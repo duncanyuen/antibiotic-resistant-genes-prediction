@@ -1,5 +1,5 @@
 from Bio import SeqIO
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 import pandas as pd
 # from bio_embeddings.embed import ProtTransBertBFDEmbedder
 # from bio_embeddings.embed import ProtTransBertBFDEmbedder
@@ -129,6 +129,17 @@ def compute_metrics(pred):
 def model_init(num_labels=14):
   return AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=13)
 
+def sample_weight(data_folder, num_class):
+    # https://discuss.pytorch.org/t/class-imbalance-with-weightedrandomsampler/81758/3
+    class_sample_count = np.array([len([i for i in data_folder.labels if i == t]) for t in range(0, num_class)])
+    weight = 1 / class_sample_count
+    samples_weight = np.array([weight[t] for t in data_folder.labels])
+    samples_weight = torch.from_numpy(samples_weight)
+    samples_weight = samples_weight.double()
+    sampler = WeightedRandomSampler(samples_weight,
+                                    len(samples_weight))
+    return sampler
+
 # https://github.com/sacdallago/bio_embeddings/blob/develop/notebooks/embed_fasta_sequences.ipynb
 
 #load dataset
@@ -161,6 +172,9 @@ print(vars(train_data[0]))
 seq_tokenizer = BertTokenizerFast.from_pretrained(model_name, do_lower_case=False)
 
 batch_size = 16
+
+num_class = len(arg_dict)
+
 max_length = 1576
 
 train_seqs, train_labels, train_df = seq_to_df(train_data, arg_dict, max_length)
@@ -179,11 +193,13 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 # size of 16 or 32.
 batch_size = 32
 
+train_sampler = sample_weight(train_dataset, num_class=num_class)
+
 # Create the DataLoaders for our training and validation sets.
 # We'll take training samples in random order. 
 train_dataloader = DataLoader(
             train_dataset,  # The training samples.
-            sampler = RandomSampler(train_dataset), # Select batches randomly
+            sampler = train_sampler, # Select batches randomly
             batch_size = batch_size # Trains with this batch size.
         )
 
@@ -264,7 +280,7 @@ for module in model.bert.modules():
     # module.requires_grad = False
     module.requires_grad_(False)
     no_gradded += 1
-    if (module_num - no_gradded < 2):
+    if (module_num - no_gradded < 8):
         break
 
 for module in model.bert.modules():
