@@ -209,7 +209,7 @@ validation_dataloader = DataLoader(
 model = nn.Sequential(
     nn.Linear(max_length, max_length//2),
     nn.Tanh(),
-    nn.Dropout(0.7),
+    nn.Dropout(0.5),
     nn.Linear(max_length//2, num_class)
 )
 
@@ -224,7 +224,7 @@ optimizer = optim.Adam(model.parameters(),
 # lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 loss_fn = nn.CrossEntropyLoss()
 
-num_epochs = 32
+num_epochs = 64
 
 total_steps = len(train_dataloader) * num_epochs
 
@@ -232,7 +232,7 @@ total_steps = len(train_dataloader) * num_epochs
 # https://github.com/huggingface/transformers/blob/5bfcd0485ece086ebcbed2d008813037968a9e58/examples/run_glue.py#L128
 
 # Set the seed value all over the place to make this reproducible.
-seed_val = 42
+seed_val = 20054
 
 random.seed(seed_val)
 np.random.seed(seed_val)
