@@ -209,7 +209,7 @@ validation_dataloader = DataLoader(
 model = nn.Sequential(
     nn.Linear(max_length, max_length//2),
     nn.Tanh(),
-    nn.Dropout(0.3),
+    nn.Dropout(0.7),
     nn.Linear(max_length//2, num_class)
 )
 
