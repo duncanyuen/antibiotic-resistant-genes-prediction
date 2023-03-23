@@ -1,0 +1,154 @@
+\documentclass{article}
+
+\usepackage{fancyhdr}
+\usepackage{extramarks}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage[plain]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{diagbox}
+\usepackage{gensymb}
+\usepackage{comment}
+\usepackage{float}
+\usepackage{pifont}
+\usepackage{graphicx}
+\graphicspath{ {./images/}{../}{../../}{../../../}{./} }
+\usepackage{bookmark}
+\usepackage{multicol}
+\setlength{\columnsep}{1cm}
+\allowdisplaybreaks
+
+\usetikzlibrary{automata,positioning}
+
+%
+% Basic Document Settings
+%
+
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\linespread{1.1}
+
+\pagestyle{fancy}
+\setlength{\headheight}{22.54448pt}
+% \renewcommand{\sectionmark}[1]{
+% \markboth{\thesection\quad #1}{}}
+\fancyhead{}
+\fancyhead[L]{\hmwkAuthorName\ \hmwkAuthorSID\\
+\hmwkClass\hmwkClassTime\ (\hmwkClassInstructor): \hmwkTitle}
+\fancyhead[C]{}
+\fancyhead[R]{\rightmark}
+\fancyfoot{}
+\fancyfoot[C]{\thepage}
+
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+
+\renewcommand\headrulewidth{0.4pt}
+\renewcommand\footrulewidth{0.4pt}
+
+\setlength\parindent{0pt}
+
+\newcommand{\fakesection}[1]{%
+  \par\refstepcounter{section}% Increase section counter
+  \sectionmark{#1}% Add section mark (header)
+  \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}% Add section to ToC
+  % Add more content here, if needed.
+}
+
+%
+% Homework Details
+%   - Title
+%   - Due date
+%   - Class
+%   - Section/Time
+%   - Instructor
+%   - Author
+%
+
+\newcommand{\hmwkTitle}{A1 Kaggle Part Report}
+\newcommand{\hmwkDoneDate}{\today}
+\newcommand{\hmwkClass}{AIST4010}
+\newcommand{\hmwkClassTime}{}
+\newcommand{\hmwkClassInstructor}{Prof. Wei Meng}
+\newcommand{\hmwkClassTitle}{AIST Final Year Project}
+\newcommand{\hmwkAuthorName}{YUEN Yu Ching}
+\newcommand{\hmwkAuthorSID}{1155143580}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    citecolor=teal,
+    urlcolor=blue,
+    pdftitle = {\hmwkClass\hmwkClassTime\ \hmwkTitle},
+    pdfauthor = {\hmwkAuthorName \hmwkAuthorSID},
+}
+\urlstyle{same}
+
+%
+% Title Page
+%
+
+\title{AIST4010 A1 Kaggle Part Report}
+\author{YUEN Yu Ching 1155143580}
+\date{\today}
+
+\renewcommand{\part}[1]{\textbf{\large Part \Alph{partCounter}}\stepcounter{partCounter}\\}
+
+%
+% Various Helper Commands
+%
+
+% Useful for algorithms
+\newcommand{\alg}[1]{\textsc{\bfseries \footnotesize #1}}
+
+% For derivatives
+\newcommand{\deriv}[1]{\frac{\mathrm{d}}{\mathrm{d}x} (#1)}
+
+% For partial derivatives
+\newcommand{\pderiv}[2]{\frac{\partial}{\partial #1} (#2)}
+
+% Integral dx
+\newcommand{\dx}{\mathrm{d}x}
+
+% Alias for the Solution section header
+\newcommand{\solution}{\textbf{\large Solution}}
+
+%Probability
+\newcommand{\prob}[1]{\mathrm{P(}\textrm{#1}\mathrm{)}}
+
+% Probability commands: Expectation, Variance, Covariance, Bias
+\newcommand{\E}{\mathrm{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Bias}{\mathrm{Bias}}
+\newcommand{\Or}{\textnormal{ or }}
+
+\begin{document}
+\maketitle
+\section{Model Architecture}
+We make use of the Evolutionary Scale Modeling repository provided by facebookresearch, specifically the ____ to generate
+\section{Loss function}
+
+\section{Hyperparameters}
+
+\section{Imbalance handling}
+
+\section{Anomalies}
+
+
+\bibliographystyle{IEEEtran}
+\bibliography{A1KAggle}
+
+\end{document}
+
+%mail to eeric lo: poster, extention to budget
